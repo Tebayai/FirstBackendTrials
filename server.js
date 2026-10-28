@@ -19,7 +19,25 @@ const getRootBase = (req, res) => {
 
 // Renvoie la liste de tous les utilisateurs
 const getAllUsers = (req, res) => {
-  res.status(200).json(users);
+  const { ville } = req.query;
+
+  if (!ville) {
+    return res.status(200).json(users);
+  }
+
+  const villes = []
+    .concat(ville)
+    .flatMap((v) => v.split(","))
+    .map((v) => v.trim().toLowerCase())
+    .filter((v) => v !== "");
+
+  if (villes.length === 0) {
+    return res.status(200).json(users);
+  }
+
+  const resultat = users.filter((u) => villes.includes(u.ville.toLowerCase()));
+
+  res.status(200).json(resultat);
 };
 
 // Renvoie un seul utilisateur, trouvé grâce à son id
