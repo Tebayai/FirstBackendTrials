@@ -1,0 +1,7 @@
+### Fichier de test pour l'extension VSCode "REST Client"
+### (installer l'extension, puis cliquer sur "Send Request" au-dessus du bloc)
+
+@baseUrl = http://localhost:3000
+
+### Route principale
+GET {{baseUrl}}/
