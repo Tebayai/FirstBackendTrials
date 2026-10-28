@@ -5,7 +5,7 @@ const PORT = 3000;
 // Middleware pour parser le JSON
 app.use(express.json());
 
-// bdd temporaire
+// bdd temp
 const users = [
   { id: 1, nom: "Bob", age: 25, ville: "Paris" },
   { id: 2, nom: "Alice", age: 18, ville: "Bordeaux" },
@@ -13,14 +13,31 @@ const users = [
 ];
 
 // La route principale
-app.get("/", (req, res) => {
+const getRootBase = (req, res) => {
   res.json({ message: "Bienvenue sur l'API Utilisateurs" });
-});
+}
 
-// renvoie la liste de tous les utilisateurs
-app.get("/api/users", (req, res) => {
+// Renvoie la liste de tous les utilisateurs
+const getAllUsers = (req, res) => {
   res.status(200).json(users);
-});
+};
+
+// Renvoie un seul utilisateur, trouvé grâce à son id
+const getUserById = (req, res) => {
+  const id = Number(req.params.id);
+  const user = users.find((u) => u.id === id);
+
+  if (!user) {
+    return res.status(404).json({ message: `Utilisateur ${req.params.id} introuvable` });
+  }
+
+  res.status(200).json(user);
+};
+
+// def des routes
+app.get("/", getRootBase);
+app.get("/api/users", getAllUsers);
+app.get("/api/users/:id", getUserById);
 
 // Démarrage du serveur
 app.listen(PORT, () => console.log(`Serveur démarré sur http://localhost:${PORT}`));
