@@ -5,3 +5,21 @@
 
 ### Route principale
 GET {{baseUrl}}/
+
+### Tous les utilisateurs
+GET {{baseUrl}}/api/users
+
+### Filtre sur une ville
+GET {{baseUrl}}/api/users?ville=Caen
+
+### Filtre sur plusieurs villes
+GET {{baseUrl}}/api/users?ville=Bordeaux&ville=Caen
+
+### Filtre sur plusieurs villes, separees par une virgule
+GET {{baseUrl}}/api/users?ville=bordeaux,caen
+
+### Un seul utilisateur
+GET {{baseUrl}}/api/users/2
+
+### Utilisateur inexistant -> 404
+GET {{baseUrl}}/api/users/99

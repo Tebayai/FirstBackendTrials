@@ -12,27 +12,44 @@ npm start        # node server.js
 
 Serveur : http://localhost:3000
 
-## État actuel
+## Structure
 
-Tout tient dans [server.js](server.js) :
+```
+server.js                             -> middlewares, route /, branchement des routes, app.listen
+src/router/usersRouter.js             -> URL -> fonction
+src/controllers/usersController.js    -> la logique des routes utilisateurs
+src/data/usersData.js                 -> le tableau qui sert de base de données temporaire
+```
 
-- import d'Express et création de l'app
-- middleware `express.json()` pour lire le body JSON
-- une route principale `GET /`
-- démarrage avec `app.listen`
+Chemin d'une requête : **client -> server.js -> routes -> controller -> data**
+
+## Routes
+
+| Méthode | URL                                  | Rôle                          | Succès |
+|---------|--------------------------------------|-------------------------------|--------|
+| GET     | /                                    | Message d'accueil             | 200    |
+| GET     | /api/users                           | Tous les utilisateurs         | 200    |
+| GET     | /api/users?ville=Caen                | Filtre sur une ville          | 200    |
+| GET     | /api/users?ville=Bordeaux&ville=Caen | Filtre sur plusieurs villes   | 200    |
+| GET     | /api/users?ville=bordeaux,caen       | Même chose, séparé par virgule| 200    |
+| GET     | /api/users/:id                       | Un seul utilisateur           | 200    |
+
+Le filtre `ville` ignore la casse et les espaces. Une recherche sans résultat renvoie `[]` en 200.
+Un id inconnu renvoie 404.
 
 ## Tester
 
 ```bash
-curl http://localhost:3000/
+curl http://localhost:3000/api/users
+curl "http://localhost:3000/api/users?ville=bordeaux,caen"
+curl http://localhost:3000/api/users/2
 ```
 
 Ou ouvrir [requests.http](requests.http) avec l'extension VSCode **REST Client**.
 
 ## À venir
 
-- le tableau d'utilisateurs en mémoire
-- les routes CRUD : GET / POST / PUT / DELETE sur `/api/users`
+- POST / PUT / DELETE sur `/api/users`
 
 ## Note
 
