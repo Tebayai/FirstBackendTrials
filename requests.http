@@ -23,3 +23,22 @@ GET {{baseUrl}}/api/users/2
 
 ### Utilisateur inexistant -> 404
 GET {{baseUrl}}/api/users/99
+
+### Creer un utilisateur -> 201
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "nom": "David",
+  "age": 42,
+  "ville": "Lille"
+}
+
+### Creation invalide -> 400
+POST {{baseUrl}}/api/users
+Content-Type: application/json
+
+{
+  "nom": "",
+  "age": "quarante"
+}
