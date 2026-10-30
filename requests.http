@@ -42,3 +42,9 @@ Content-Type: application/json
   "nom": "",
   "age": "quarante"
 }
+
+### Supprimer un utilisateur
+DELETE {{baseUrl}}/api/users/2
+
+### Supprimer un utilisateur inexistant -> 404
+DELETE {{baseUrl}}/api/users/99

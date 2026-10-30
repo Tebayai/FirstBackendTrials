@@ -34,6 +34,7 @@ Chemin d'une requête : **client -> server.js -> routes -> controller -> data**
 | GET     | /api/users?ville=bordeaux,caen       | Même chose, séparé par virgule| 200    |
 | GET     | /api/users/:id                       | Un seul utilisateur           | 200    |
 | POST    | /api/users                           | Cree un utilisateur           | 201    |
+| DELETE  | /api/users/:id                       | Supprime un utilisateur       | 200    |
 
 Le filtre `ville` ignore la casse et les espaces. Une recherche sans résultat renvoie `[]` en 200.
 Un id inconnu renvoie 404.
@@ -56,13 +57,15 @@ curl http://localhost:3000/api/users/2
 curl -X POST http://localhost:3000/api/users \
   -H "Content-Type: application/json" \
   -d '{"nom":"David","age":42,"ville":"Lille"}'
+
+curl -X DELETE http://localhost:3000/api/users/2
 ```
 
 Ou ouvrir [requests.http](requests.http) avec l'extension VSCode **REST Client**.
 
 ## À venir
 
-- PUT / DELETE sur `/api/users`
+- PUT / PATCH sur `/api/users`
 
 ## Note
 

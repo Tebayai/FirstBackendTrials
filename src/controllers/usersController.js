@@ -72,12 +72,18 @@ const createUser = (req, res) => {
   res.status(201).json(nouvelUtilisateur);
 };
 
-module.exports = { getAllUsers, getUserById, createUser };
+// Supprime un utilisateur, trouve grace a son id
+const deleteUser = (req, res) => {
+  const id = Number(req.params.id);
+  const index = users.findIndex((u) => u.id === id);
 
-/*
-* Il existe 4 grandes manière de tester Manuellement une route d'un backend/API :
-* 1. Avec un navigateur web (pour les requêtes GET)
-* 2. Avec curl (en ligne de commande, c'est moche et peu lisible ex. curl http://localhost:3000/api/users)
-* 3. Dans la codebase avec un script (long et peu pratique)
-* 4. Avec Postman (application dédiée, tout les methodes HTTP, très pratique et lisible)
-*/
+  if (index === -1) {
+    return res.status(404).json({ message: `Utilisateur ${req.params.id} introuvable` });
+  }
+
+  const [userSupprime] = users.splice(index, 1);
+
+  res.status(200).json({ message: "Utilisateur supprime", utilisateur: userSupprime });
+};
+
+module.exports = { getAllUsers, getUserById, createUser, deleteUser };
