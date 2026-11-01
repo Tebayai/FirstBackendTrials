@@ -1,37 +1,56 @@
-const users = require("../data/usersData");
+const supabase = require("../data/supabaseClient");
 
 // Renvoie la liste de tous les utilisateurs
-const getAllUsers = (req, res) => {
+const getAllUsers = async (req, res) => {
   const { ville } = req.query;
 
-  if (!ville) {
-    return res.status(200).json(users);
-  }
-
   const villes = []
-    .concat(ville)
+    .concat(ville ?? [])
     .filter((v) => typeof v === "string")
     .flatMap((v) => v.split(","))
-    .map((v) => v.trim().toLowerCase())
+    .map((v) => v.trim())
     .filter((v) => v !== "");
 
-  if (villes.length === 0) {
-    return res.status(200).json(users);
+  // Seulement des lettres (accents compris), espaces, tirets et apostrophes :
+  // les autres caracteres (% , . ( ) ...) ont un sens special pour Supabase
+  const villesInvalides = villes.filter((v) => !/^[\p{L} '-]+$/u.test(v));
+
+  if (villesInvalides.length > 0) {
+    return res.status(400).json({ message: "Nom de ville invalide", villes: villesInvalides });
   }
 
-  const resultat = users.filter((u) => villes.includes(u.ville.toLowerCase()));
+  let requete = supabase.from("users").select("*").order("id");
 
-  res.status(200).json(resultat);
+  if (villes.length > 0) {
+    // ilike = comparaison qui ignore les majuscules
+    requete = requete.or(villes.map((v) => `ville.ilike."${v}"`).join(","));
+  }
+
+  const { data: users, error } = await requete;
+
+  if (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Erreur de la base de données" });
+  }
+
+  res.status(200).json(users);
 };
 
 // Renvoie un seul utilisateur, trouvé grâce à son id
-const getUserById = (req, res) => {
+const getUserById = async (req, res) => {
   const id = Number(req.params.id);
 
-  if (!Number.isInteger(id) || id < 1) {
+  if (!Number.isSafeInteger(id) || id < 1) {
     return res.status(400).json({ message: `Id invalide : ${req.params.id} (nombre entier positif attendu)` });
   }
-  const user = users.find((u) => u.id === id);
+
+  // maybeSingle : renvoie l'utilisateur, ou null si aucune ligne ne correspond
+  const { data: user, error } = await supabase.from("users").select("*").eq("id", id).maybeSingle();
+
+  if (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Erreur de la base de données" });
+  }
 
   if (!user) {
     return res.status(404).json({ message: `Utilisateur ${req.params.id} introuvable` });
@@ -41,7 +60,7 @@ const getUserById = (req, res) => {
 };
 
 // Cree un nouvel utilisateur
-const createUser = (req, res) => {
+const createUser = async (req, res) => {
   const { nom, age, ville } = req.body;
 
   const champsInvalides = [];
@@ -65,30 +84,28 @@ const createUser = (req, res) => {
     });
   }
 
-  const nouvelUtilisateur = {
-    id: users.length > 0 ? Math.max(...users.map((u) => u.id)) + 1 : 1,
-    nom: nom.trim(),
-    age,
-    ville: ville.trim(),
-  };
+  // L'id est genere par la bdd, select() renvoie la ligne creee
+  const { data: nouvelUtilisateur, error } = await supabase
+    .from("users")
+    .insert({ nom: nom.trim(), age, ville: ville.trim() })
+    .select()
+    .single();
 
-  users.push(nouvelUtilisateur);
+  if (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Erreur de la base de données" });
+  }
 
   res.status(201).json(nouvelUtilisateur);
 };
 
 // Modifie un utilisateur existant, trouve grace a son id
 // (les trois champs sont obligatoires, un eventuel id dans le body est ignore)
-const updateUser = (req, res) => {
+const updateUser = async (req, res) => {
   const id = Number(req.params.id);
 
-  if (!Number.isInteger(id) || id < 1) {
+  if (!Number.isSafeInteger(id) || id < 1) {
     return res.status(400).json({ message: `Id invalide : ${req.params.id} (nombre entier positif attendu)` });
-  }
-  const user = users.find((u) => u.id === id);
-
-  if (!user) {
-    return res.status(404).json({ message: `Utilisateur ${req.params.id} introuvable` });
   }
 
   const { nom, age, ville } = req.body;
@@ -114,27 +131,45 @@ const updateUser = (req, res) => {
     });
   }
 
-  user.nom = nom.trim();
-  user.age = age;
-  user.ville = ville.trim();
+  // Si aucune ligne n'a cet id, rien n'est modifie et user vaut null
+  const { data: user, error } = await supabase
+    .from("users")
+    .update({ nom: nom.trim(), age, ville: ville.trim() })
+    .eq("id", id)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Erreur de la base de données" });
+  }
+
+  if (!user) {
+    return res.status(404).json({ message: `Utilisateur ${req.params.id} introuvable` });
+  }
 
   res.status(200).json(user);
 };
 
 // Supprime un utilisateur, trouve grace a son id
-const deleteUser = (req, res) => {
+const deleteUser = async (req, res) => {
   const id = Number(req.params.id);
 
-  if (!Number.isInteger(id) || id < 1) {
+  if (!Number.isSafeInteger(id) || id < 1) {
     return res.status(400).json({ message: `Id invalide : ${req.params.id} (nombre entier positif attendu)` });
   }
-  const index = users.findIndex((u) => u.id === id);
 
-  if (index === -1) {
-    return res.status(404).json({ message: `Utilisateur ${req.params.id} introuvable` });
+  // select() renvoie la ligne supprimee, ou null si aucune ligne n'a cet id
+  const { data: userSupprime, error } = await supabase.from("users").delete().eq("id", id).select().maybeSingle();
+
+  if (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Erreur de la base de données" });
   }
 
-  const [userSupprime] = users.splice(index, 1);
+  if (!userSupprime) {
+    return res.status(404).json({ message: `Utilisateur ${req.params.id} introuvable` });
+  }
 
   res.status(200).json({ message: "Utilisateur supprime", utilisateur: userSupprime });
 };

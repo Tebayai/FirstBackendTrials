@@ -1,3 +1,6 @@
+// Charge les variables du fichier .env dans process.env (a faire avant tout le reste)
+require("dotenv").config();
+
 const express = require("express");
 const usersRouter = require("./src/router/usersRouter");
 

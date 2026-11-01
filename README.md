@@ -1,11 +1,12 @@
 # API REST - CRUD Utilisateurs
 
-Première API backend en Node.js + Express. Construction pas à pas.
+Première API backend en Node.js + Express, avec une base de données Supabase (PostgreSQL). Construction pas à pas.
 
 ## Démarrer
 
 ```bash
 npm install      # une seule fois
+# créer le fichier .env (voir "Configuration" ci-dessous)
 npm run dev      # nodemon : redémarre à chaque sauvegarde
 npm start        # node server.js
 ```
@@ -18,10 +19,23 @@ Serveur : http://localhost:3000
 server.js                             -> middlewares, route /, branchement des routes, app.listen
 src/router/usersRouter.js             -> URL -> fonction
 src/controllers/usersController.js    -> la logique des routes utilisateurs
-src/data/usersData.js                 -> le tableau qui sert de base de données temporaire
+src/data/supabaseClient.js            -> la connexion à la base Supabase
 ```
 
-Chemin d'une requête : **client -> server.js -> routes -> controller -> data**
+Chemin d'une requête : **client -> server.js -> routes -> controller -> Supabase**
+
+## Configuration
+
+```sql
+create table users (
+  id    bigint generated always as identity primary key,
+  nom   text    not null,
+  age   integer not null check (age between 0 and 150),
+  ville text    not null
+);
+
+alter table users enable row level security;
+```
 
 ## Routes
 
@@ -37,10 +51,10 @@ Chemin d'une requête : **client -> server.js -> routes -> controller -> data**
 | PUT     | /api/users/:id                       | Modifie un utilisateur        | 200    |
 | DELETE  | /api/users/:id                       | Supprime un utilisateur       | 200    |
 
-Le filtre `ville` ignore la casse et les espaces. Une recherche sans résultat renvoie `[]` en 200.
+Le filtre `ville` ignore la casse et les espaces. Un nom de ville ne peut contenir que des lettres, espaces, tirets et apostrophes (sinon 400). Une recherche sans résultat renvoie `[]` en 200.
 Un id inconnu renvoie 404, un id qui n'est pas un nombre entier (ex. `abc`) renvoie 400.
 
-Le POST attend un body JSON avec les trois champs. L'id est genere par le serveur.
+Le POST attend un body JSON avec les trois champs. L'id est généré par la base de données.
 
 ```json
 { "nom": "David", "age": 42, "ville": "Lille" }
@@ -59,11 +73,12 @@ Toutes les erreurs sont renvoyées en JSON sous la forme `{ "message": "..." }` 
 |-----------------------------|------|
 | Champ manquant ou invalide  | 400  |
 | Id qui n'est pas un entier  | 400  |
+| Nom de ville invalide       | 400  |
 | Body JSON mal formé         | 400  |
 | Utilisateur introuvable     | 404  |
 | Route inexistante           | 404  |
 | Body trop volumineux        | 413  |
-| Erreur imprévue             | 500  |
+| Erreur de la base / imprévue| 500  |
 
 ## Tester
 

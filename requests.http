@@ -18,6 +18,9 @@ GET {{baseUrl}}/api/users?ville=Bordeaux&ville=Caen
 ### Filtre sur plusieurs villes, separees par une virgule
 GET {{baseUrl}}/api/users?ville=bordeaux,caen
 
+### Nom de ville invalide -> 400
+GET {{baseUrl}}/api/users?ville=c%25
+
 ### Un seul utilisateur
 GET {{baseUrl}}/api/users/2
 
