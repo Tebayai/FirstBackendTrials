@@ -16,6 +16,29 @@ const getRootBase = (req, res) => {
 app.get("/", getRootBase);
 app.use("/api/users", usersRouter);
 
+// Route inconnue -> 404 en JSON (au lieu de la page HTML d'Express)
+const routeIntrouvable = (req, res) => {
+  res.status(404).json({ message: `Route ${req.method} ${req.originalUrl} introuvable` });
+};
+
+// Gestion des erreurs -> toujours du JSON, sans pile d'appels pour le client
+// (les 4 parametres sont obligatoires pour qu'Express le reconnaisse comme gestionnaire d'erreurs)
+const gestionErreurs = (err, req, res, next) => {
+  if (err.type === "entity.parse.failed") {
+    return res.status(400).json({ message: "Le body n'est pas un JSON valide" });
+  }
+
+  if (err.type === "entity.too.large") {
+    return res.status(413).json({ message: "Le body est trop volumineux" });
+  }
+
+  console.error(err);
+  res.status(500).json({ message: "Erreur interne du serveur" });
+};
+
+app.use(routeIntrouvable);
+app.use(gestionErreurs);
+
 // Démarrage du serveur
 app.listen(PORT, () => console.log(`Serveur démarré sur http://localhost:${PORT}`));
 

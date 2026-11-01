@@ -10,6 +10,7 @@ const getAllUsers = (req, res) => {
 
   const villes = []
     .concat(ville)
+    .filter((v) => typeof v === "string")
     .flatMap((v) => v.split(","))
     .map((v) => v.trim().toLowerCase())
     .filter((v) => v !== "");
@@ -26,6 +27,10 @@ const getAllUsers = (req, res) => {
 // Renvoie un seul utilisateur, trouvé grâce à son id
 const getUserById = (req, res) => {
   const id = Number(req.params.id);
+
+  if (!Number.isInteger(id) || id < 1) {
+    return res.status(400).json({ message: `Id invalide : ${req.params.id} (nombre entier positif attendu)` });
+  }
   const user = users.find((u) => u.id === id);
 
   if (!user) {
@@ -45,7 +50,7 @@ const createUser = (req, res) => {
     champsInvalides.push("nom");
   }
 
-  if (!Number.isInteger(age) || age < 0) {
+  if (!Number.isInteger(age) || age < 0 || age > 150) {
     champsInvalides.push("age");
   }
 
@@ -76,6 +81,10 @@ const createUser = (req, res) => {
 // (les trois champs sont obligatoires, un eventuel id dans le body est ignore)
 const updateUser = (req, res) => {
   const id = Number(req.params.id);
+
+  if (!Number.isInteger(id) || id < 1) {
+    return res.status(400).json({ message: `Id invalide : ${req.params.id} (nombre entier positif attendu)` });
+  }
   const user = users.find((u) => u.id === id);
 
   if (!user) {
@@ -90,7 +99,7 @@ const updateUser = (req, res) => {
     champsInvalides.push("nom");
   }
 
-  if (!Number.isInteger(age) || age < 0) {
+  if (!Number.isInteger(age) || age < 0 || age > 150) {
     champsInvalides.push("age");
   }
 
@@ -115,6 +124,10 @@ const updateUser = (req, res) => {
 // Supprime un utilisateur, trouve grace a son id
 const deleteUser = (req, res) => {
   const id = Number(req.params.id);
+
+  if (!Number.isInteger(id) || id < 1) {
+    return res.status(400).json({ message: `Id invalide : ${req.params.id} (nombre entier positif attendu)` });
+  }
   const index = users.findIndex((u) => u.id === id);
 
   if (index === -1) {

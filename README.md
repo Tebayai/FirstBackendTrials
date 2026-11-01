@@ -38,7 +38,7 @@ Chemin d'une requête : **client -> server.js -> routes -> controller -> data**
 | DELETE  | /api/users/:id                       | Supprime un utilisateur       | 200    |
 
 Le filtre `ville` ignore la casse et les espaces. Une recherche sans résultat renvoie `[]` en 200.
-Un id inconnu renvoie 404.
+Un id inconnu renvoie 404, un id qui n'est pas un nombre entier (ex. `abc`) renvoie 400.
 
 Le POST attend un body JSON avec les trois champs. L'id est genere par le serveur.
 
@@ -46,10 +46,24 @@ Le POST attend un body JSON avec les trois champs. L'id est genere par le serveu
 { "nom": "David", "age": 42, "ville": "Lille" }
 ```
 
-Un champ manquant ou mal type renvoie 400 avec la liste des champs fautifs.
+Un champ manquant ou mal type renvoie 400 avec la liste des champs fautifs. L'âge doit être un entier entre 0 et 150.
 
 Le PUT modifie l'utilisateur : il attend les trois champs, comme le POST (sinon 400).
 L'id vient toujours de l'URL ; un `id` dans le body est ignoré.
+
+## Erreurs
+
+Toutes les erreurs sont renvoyées en JSON sous la forme `{ "message": "..." }` :
+
+| Cas                         | Code |
+|-----------------------------|------|
+| Champ manquant ou invalide  | 400  |
+| Id qui n'est pas un entier  | 400  |
+| Body JSON mal formé         | 400  |
+| Utilisateur introuvable     | 404  |
+| Route inexistante           | 404  |
+| Body trop volumineux        | 413  |
+| Erreur imprévue             | 500  |
 
 ## Tester
 
