@@ -34,6 +34,7 @@ Chemin d'une requête : **client -> server.js -> routes -> controller -> data**
 | GET     | /api/users?ville=bordeaux,caen       | Même chose, séparé par virgule| 200    |
 | GET     | /api/users/:id                       | Un seul utilisateur           | 200    |
 | POST    | /api/users                           | Cree un utilisateur           | 201    |
+| PUT     | /api/users/:id                       | Modifie un utilisateur        | 200    |
 | DELETE  | /api/users/:id                       | Supprime un utilisateur       | 200    |
 
 Le filtre `ville` ignore la casse et les espaces. Une recherche sans résultat renvoie `[]` en 200.
@@ -47,6 +48,9 @@ Le POST attend un body JSON avec les trois champs. L'id est genere par le serveu
 
 Un champ manquant ou mal type renvoie 400 avec la liste des champs fautifs.
 
+Le PUT modifie l'utilisateur : il attend les trois champs, comme le POST (sinon 400).
+L'id vient toujours de l'URL ; un `id` dans le body est ignoré.
+
 ## Tester
 
 ```bash
@@ -58,14 +62,12 @@ curl -X POST http://localhost:3000/api/users \
   -H "Content-Type: application/json" \
   -d '{"nom":"David","age":42,"ville":"Lille"}'
 
+curl -X PUT http://localhost:3000/api/users/3   -H "Content-Type: application/json"   -d '{"nom":"Clémence","age":35,"ville":"Limoges"}'
+
 curl -X DELETE http://localhost:3000/api/users/2
 ```
 
 Ou ouvrir [requests.http](requests.http) avec l'extension VSCode **REST Client**.
-
-## À venir
-
-- PUT / PATCH sur `/api/users`
 
 ## Note
 

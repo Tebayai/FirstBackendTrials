@@ -72,6 +72,46 @@ const createUser = (req, res) => {
   res.status(201).json(nouvelUtilisateur);
 };
 
+// Modifie un utilisateur existant, trouve grace a son id
+// (les trois champs sont obligatoires, un eventuel id dans le body est ignore)
+const updateUser = (req, res) => {
+  const id = Number(req.params.id);
+  const user = users.find((u) => u.id === id);
+
+  if (!user) {
+    return res.status(404).json({ message: `Utilisateur ${req.params.id} introuvable` });
+  }
+
+  const { nom, age, ville } = req.body;
+
+  const champsInvalides = [];
+
+  if (typeof nom !== "string" || nom.trim() === "") {
+    champsInvalides.push("nom");
+  }
+
+  if (!Number.isInteger(age) || age < 0) {
+    champsInvalides.push("age");
+  }
+
+  if (typeof ville !== "string" || ville.trim() === "") {
+    champsInvalides.push("ville");
+  }
+
+  if (champsInvalides.length > 0) {
+    return res.status(400).json({
+      message: "Champs manquants ou invalides",
+      champs: champsInvalides,
+    });
+  }
+
+  user.nom = nom.trim();
+  user.age = age;
+  user.ville = ville.trim();
+
+  res.status(200).json(user);
+};
+
 // Supprime un utilisateur, trouve grace a son id
 const deleteUser = (req, res) => {
   const id = Number(req.params.id);
@@ -86,4 +126,4 @@ const deleteUser = (req, res) => {
   res.status(200).json({ message: "Utilisateur supprime", utilisateur: userSupprime });
 };
 
-module.exports = { getAllUsers, getUserById, createUser, deleteUser };
+module.exports = { getAllUsers, getUserById, createUser, updateUser, deleteUser };

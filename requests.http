@@ -43,6 +43,34 @@ Content-Type: application/json
   "age": "quarante"
 }
 
+### Modifier un utilisateur (les 3 champs sont obligatoires)
+PUT {{baseUrl}}/api/users/3
+Content-Type: application/json
+
+{
+  "nom": "Clémence",
+  "age": 35,
+  "ville": "Limoges"
+}
+
+### Modification incomplete -> 400
+PUT {{baseUrl}}/api/users/3
+Content-Type: application/json
+
+{
+  "ville": "Lyon"
+}
+
+### Modifier un utilisateur inexistant -> 404
+PUT {{baseUrl}}/api/users/99
+Content-Type: application/json
+
+{
+  "nom": "Personne",
+  "age": 30,
+  "ville": "Nulle part"
+}
+
 ### Supprimer un utilisateur
 DELETE {{baseUrl}}/api/users/2
 
