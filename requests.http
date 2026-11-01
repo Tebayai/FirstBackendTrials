@@ -6,29 +6,67 @@
 ### Route principale
 GET {{baseUrl}}/
 
+### ---------- Authentification ----------
+
+### Creer un compte (un email de confirmation est envoye)
+POST {{baseUrl}}/api/auth/signup
+Content-Type: application/json
+
+{
+  "email": "ton.email@exemple.com",
+  "password": "MotDePasse123!"
+}
+
+### Se connecter -> renvoie le token
+### (lancer cette requete en premier : le token est ensuite reutilise automatiquement via {{token}})
+# @name signin
+POST {{baseUrl}}/api/auth/signin
+Content-Type: application/json
+
+{
+  "email": "ton.email@exemple.com",
+  "password": "MotDePasse123!"
+}
+
+###
+@token = {{signin.response.body.access_token}}
+
+### Route protegee sans token -> 401
+GET {{baseUrl}}/api/users
+
+### ---------- Utilisateurs (token obligatoire) ----------
+
 ### Tous les utilisateurs
 GET {{baseUrl}}/api/users
+Authorization: Bearer {{token}}
 
 ### Filtre sur une ville
 GET {{baseUrl}}/api/users?ville=Caen
+Authorization: Bearer {{token}}
 
 ### Filtre sur plusieurs villes
 GET {{baseUrl}}/api/users?ville=Bordeaux&ville=Caen
+Authorization: Bearer {{token}}
 
 ### Filtre sur plusieurs villes, separees par une virgule
 GET {{baseUrl}}/api/users?ville=bordeaux,caen
+Authorization: Bearer {{token}}
 
 ### Nom de ville invalide -> 400
 GET {{baseUrl}}/api/users?ville=c%25
+Authorization: Bearer {{token}}
 
 ### Un seul utilisateur
 GET {{baseUrl}}/api/users/2
+Authorization: Bearer {{token}}
 
 ### Utilisateur inexistant -> 404
 GET {{baseUrl}}/api/users/99
+Authorization: Bearer {{token}}
 
 ### Creer un utilisateur -> 201
 POST {{baseUrl}}/api/users
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -39,6 +77,7 @@ Content-Type: application/json
 
 ### Creation invalide -> 400
 POST {{baseUrl}}/api/users
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -48,6 +87,7 @@ Content-Type: application/json
 
 ### Modifier un utilisateur (les 3 champs sont obligatoires)
 PUT {{baseUrl}}/api/users/3
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -58,6 +98,7 @@ Content-Type: application/json
 
 ### Modification incomplete -> 400
 PUT {{baseUrl}}/api/users/3
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -66,6 +107,7 @@ Content-Type: application/json
 
 ### Modifier un utilisateur inexistant -> 404
 PUT {{baseUrl}}/api/users/99
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -76,6 +118,8 @@ Content-Type: application/json
 
 ### Supprimer un utilisateur
 DELETE {{baseUrl}}/api/users/2
+Authorization: Bearer {{token}}
 
 ### Supprimer un utilisateur inexistant -> 404
 DELETE {{baseUrl}}/api/users/99
+Authorization: Bearer {{token}}

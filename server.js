@@ -3,6 +3,8 @@ require("dotenv").config();
 
 const express = require("express");
 const usersRouter = require("./src/router/usersRouter");
+const authRouter = require("./src/router/authRouter");
+const requireAuth = require("./src/middlewares/authMiddleware");
 
 const app = express();
 const PORT = 3000;
@@ -17,7 +19,8 @@ const getRootBase = (req, res) => {
 
 // def des routes
 app.get("/", getRootBase);
-app.use("/api/users", usersRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/users", requireAuth, usersRouter); // requireAuth : toutes les routes users demandent un token
 
 // Route inconnue -> 404 en JSON (au lieu de la page HTML d'Express)
 const routeIntrouvable = (req, res) => {
