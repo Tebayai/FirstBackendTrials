@@ -57,19 +57,6 @@ alter table users enable row level security;
 | PUT     | /api/users/:id                       | Modifie un utilisateur        | 200    |
 | DELETE  | /api/users/:id                       | Supprime un utilisateur       | 200    |
 
-## Authentification
-
-Gérée par **Supabase Auth**. Toutes les routes `/api/users` demandent un token (sinon 401).
-
-1. `POST /api/auth/signup` avec `{ "email": "...", "password": "..." }` : crée le compte. Supabase envoie un email de confirmation, à valider avant de pouvoir se connecter.
-2. `POST /api/auth/signin` avec les mêmes champs : renvoie un `access_token` (valable 1 heure).
-3. Envoyer ce token dans le header de chaque requête :
-
-```
-Authorization: Bearer <access_token>
-```
-
-Le middleware `requireAuth` vérifie le token auprès de Supabase et met l'utilisateur connecté dans `req.user`.
 
 | Cas                                  | Code |
 |--------------------------------------|------|
@@ -108,34 +95,3 @@ Toutes les erreurs sont renvoyées en JSON sous la forme `{ "message": "..." }` 
 | Route inexistante           | 404  |
 | Body trop volumineux        | 413  |
 | Erreur de la base / imprévue| 500  |
-
-## Tester
-
-```bash
-# se connecter et copier l'access_token de la réponse
-curl -X POST http://localhost:3000/api/auth/signin \
-  -H "Content-Type: application/json" \
-  -d '{"email":"ton.email@exemple.com","password":"MotDePasse123!"}'
-
-TOKEN=colle_le_token_ici
-
-curl -H "Authorization: Bearer $TOKEN" http://localhost:3000/api/users
-curl -H "Authorization: Bearer $TOKEN" "http://localhost:3000/api/users?ville=bordeaux,caen"
-curl -H "Authorization: Bearer $TOKEN" http://localhost:3000/api/users/2
-
-curl -H "Authorization: Bearer $TOKEN" -X POST http://localhost:3000/api/users \
-  -H "Content-Type: application/json" \
-  -d '{"nom":"David","age":42,"ville":"Lille"}'
-
-curl -H "Authorization: Bearer $TOKEN" -X PUT http://localhost:3000/api/users/3 \
-  -H "Content-Type: application/json" \
-  -d '{"nom":"Clémence","age":35,"ville":"Limoges"}'
-
-curl -H "Authorization: Bearer $TOKEN" -X DELETE http://localhost:3000/api/users/2
-```
-
-Ou ouvrir [requests.http](requests.http) avec l'extension VSCode **REST Client**.
-
-## Note
-
-Express 4 est utilisé (Express 5 exige Node >= 18, cette machine est en Node 16).
